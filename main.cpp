@@ -1,35 +1,63 @@
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
-
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
-#include <glm/vec4.hpp>
-#include <glm/mat4x4.hpp>
+#include <vulkan/vulkan.h>		// LunarG SDK
 
 #include <iostream>
+#include <stdexcept>
+#include <cstdlib>
 
-int main(){
-	glfwInit();
+#define GLFW_INCLUDE_VULKAN
+#include <GLFW/glfw3.h>			// Cross-platform window for graphics libraries (GL)
 
-	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-	GLFWwindow* window = glfwCreateWindow(800, 600, "Vulkan window", nullptr, nullptr);
+const uint32_t WIDTH = 800;
+const uint32_t HEIGHT = 600;
 
-	uint32_t extensionCount = 0;
-	vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
-
-	std::cout << extensionCount << " extensions suppopoerted\n";
-
-	glm::mat4 matrix;
-	glm::vec4 vec;
-	auto test = matrix * vec;
-
-	while(!glfwWindowShouldClose(window)) {
-			glfwPollEvents();
+class HelloTriangleApplication {
+public:
+	void run() {
+		initWindow();
+		initVulkan();
+		mainLoop();
+		cleanup();
 	}
+
+private:
+
+	GLFWwindow* window;
+
+	void initWindow() {
+		glfwInit();
+		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);	// GLFW originally meant for OpenGL
+		glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);		// window resizing requires extra care
+		
+		window = glfwCreateWindow(WIDTH, HEIGHT, "Vulkan", nullptr, nullptr);
 	
-	glfwDestroyWindow(window);
+	}	
+	
+	void initVulkan() {
 
-	glfwTerminate();
+	}
 
-	return 0;
+	void mainLoop() {
+		while (!glfwWindowShouldClose(window)) {
+			glfwPollEvents();
+		}
+	}
+
+	void cleanup() {
+		glfwDestroyWindow(window);
+
+		glfwTerminate();
+	}
+};
+
+int main() {
+	HelloTriangleApplication app;
+
+	try {
+		app.run();
+	} catch (const std::exception &e) {
+		std::cerr << e.what() << std::endl;
+		return EXIT_FAILURE;
+	}
+
+	return EXIT_SUCCESS;
 }
