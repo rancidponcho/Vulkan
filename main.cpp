@@ -3,12 +3,8 @@
 
 #include <iostream>
 #include <stdexcept>
-#include <vector>
-#include <cstdlib>
-#include <cstring>
-#include <typeinfo>
 
-#include "public/vkApplication.h"
+#include "public/vkApplication.hpp"
 
 int main()
 {
@@ -16,7 +12,7 @@ int main()
 
 	try
 	{
-		app.run(); // use constructor/destructor instead of run()/cleanup() ?
+		app.run(); // constructor/destructor vs run()/cleanup() ?
 	}
 	catch (const std::exception &e)
 	{

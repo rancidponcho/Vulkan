@@ -1,20 +1,14 @@
-#include "../public/vkApplication.h"
+#include "../public/vkApplication.hpp"
 
-// extension functions are not automatically loaded -> must look up address using vkGetInstanceProcAddr
-VkResult vkApplication::CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT *pCreateInfo,
-                                                     const VkAllocationCallbacks *pAllocator, VkDebugUtilsMessengerEXT *pDebugMessenger)
+VKAPI_ATTR VkBool32 VKAPI_CALL vkApplication::debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData, void *pUserData)
 {
-    // ??? what in the function call is this ??? func becomes type PFN_vkCreateDebugUtilsMessengerEXT ???
-    auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
+    // debug message filter
+    if (messageSeverity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
+    {
+        std::cerr << "Validation layer: " << pCallbackData->pMessage << std::endl;
+    }
 
-    if (func != nullptr)
-    {
-        return func(instance, pCreateInfo, pAllocator, pDebugMessenger);
-    }
-    else
-    {
-        return VK_ERROR_EXTENSION_NOT_PRESENT;
-    }
+    return VK_FALSE;
 }
 
 void vkApplication::DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks *pAllocator)
@@ -26,27 +20,18 @@ void vkApplication::DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUt
     }
 }
 
-void vkApplication::run()
+void vkApplication::cleanup()
 {
-    initWindow();
-    initVulkan();
-    mainLoop();
-    cleanup();
-}
+    if (enableValidationLayers)
+    {
+        DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr); // must be destroyed before vkInstance
+    }
 
-void vkApplication::initWindow()
-{
-    glfwInit();
-    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API); // GLFW originally meant for OpenGL
-    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);   // window resizing requires extra care
+    vkDestroyInstance(instance, nullptr); // optional allocator callback ignored by passing nullptr
 
-    window = glfwCreateWindow(WIDTH, HEIGHT, "Vulkan", nullptr, nullptr);
-}
+    glfwDestroyWindow(window);
 
-void vkApplication::initVulkan()
-{
-    createInstance();
-    setupDebugMessenger();
+    glfwTerminate();
 }
 
 void vkApplication::mainLoop()
@@ -57,90 +42,80 @@ void vkApplication::mainLoop()
     }
 }
 
-void vkApplication::cleanup()
+QueueFamilyIndices vkApplication::findQueueFamilies(VkPhysicalDevice device)
 {
-    if (enableValidationLayers)
+    // Setup vector of families available on device
+    QueueFamilyIndices indices;
+    uint32_t queueFamilyCount{0};
+    vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
+    std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+    vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
+
+    int i{0};
+    for (const auto &queueFamily : queueFamilies)
     {
-        DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
+        // Could make this a switch case if requires for more than one family
+        if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) // Must find atleast one family that supports graphics.
+        {
+            indices.graphicsFamily = i;
+        }
+        if (indices.isComplete()) // Early exit incase family exists but is not VK_QUEUE_GRAPHICS_BIT.
+        {
+            break;
+        }
+        i++;
     }
 
-    vkDestroyInstance(instance, nullptr); // optional allocator callback ignored by passing nullptr
+    return indices;
+}
+// This method looks useless. It needs to choose GPU based on scoring system.
+bool vkApplication::isDeviceSuitable(VkPhysicalDevice device)
+{
+    QueueFamilyIndices indices = findQueueFamilies(device);
 
-    glfwDestroyWindow(window);
-
-    glfwTerminate();
+    return indices.isComplete();
 }
 
-/* ========== UTILITIES ========== */
-// Vulkan creation.
-void vkApplication::createInstance()
+void vkApplication::pickPhysicalDevice()
 {
-    if (enableValidationLayers && !checkValidationLayerSupport())
+    uint32_t deviceCount{0};
+    vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
+    if (deviceCount == 0)
     {
-        throw std::runtime_error("validation layers requested, but not available!");
+        throw std::runtime_error("Failed to find GPUs with Vulkan support!");
     }
+    std::vector<VkPhysicalDevice> devices(deviceCount);
+    vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
 
-    //	1)
-    VkApplicationInfo appInfo{};
-    appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-    appInfo.pApplicationName = "Hello Triangle";
-    appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-    appInfo.pEngineName = "No Engine";
-    appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-    appInfo.apiVersion = VK_API_VERSION_1_0;
-
-    //	2)  nullptr
-
-    //	3)
-    VkInstanceCreateInfo createInfo{};
-    createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-    createInfo.pApplicationInfo = &appInfo;
-
-    auto extensions = getRequiredExtensions(); //	Vk is platform agnostic -> need extensions to interface with the window system (GLFW)
-    createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
-    createInfo.ppEnabledExtensionNames = extensions.data();
-
-    VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
-    if (enableValidationLayers)
+    for (const auto &device : devices)
     {
-        // clarify number of layers required and enable them
-        createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
-        createInfo.ppEnabledLayerNames = validationLayers.data();
+        if (isDeviceSuitable(device))
+        {
+            physicalDevice = device;
+            break;
+        }
+    }
+    if (physicalDevice == VK_NULL_HANDLE)
+    {
+        throw std::runtime_error("Failed to find suitable GPU");
+    }
+}
 
-        populateDebugMessengerCreateInfo(debugCreateInfo);
-        createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT *)&debugCreateInfo;
+VkResult vkApplication::CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT *pCreateInfo, const VkAllocationCallbacks *pAllocator, VkDebugUtilsMessengerEXT *pDebugMessenger)
+{
+    /* Functions that aren't part of the LunarG's Vk core profile are not loaded but their addresses can be found using vkGetInstanceProcAddr */
+    // ??? what the func is this ? func becomes type PFN_vkCreateDebugUtilsMessengerEXT ???
+    auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
+    if (func != nullptr)
+    {
+        return func(instance, pCreateInfo, pAllocator, pDebugMessenger);
     }
     else
     {
-        createInfo.enabledLayerCount = 0;
-
-        createInfo.pNext = nullptr;
-    }
-
-    //	Now that parameters are specified, Vk instance can be created.
-    if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS)
-    {
-        throw std::runtime_error("failed to create instance!");
+        return VK_ERROR_EXTENSION_NOT_PRESENT;
     }
 }
 
-/* DEBUG Messenger*/
-// specifies debug messenger parameters
-void vkApplication::populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT &createInfo)
-{
-    createInfo = {};
-    createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-    createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
-                                 VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT |
-                                 VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
-                                 VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-    createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
-                             VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
-                             VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-    createInfo.pfnUserCallback = debugCallback;
-}
-
-// self-explanatory
 void vkApplication::setupDebugMessenger()
 {
     if (!enableValidationLayers)
@@ -151,14 +126,22 @@ void vkApplication::setupDebugMessenger()
 
     if (CreateDebugUtilsMessengerEXT(instance, &createInfo, nullptr, &debugMessenger) != VK_SUCCESS)
     {
-        throw std::runtime_error("failed to set up debug messenger!");
+        throw std::runtime_error("Failed to set up debug messenger!");
     }
 }
 
-// returns GLFW-REQUIRED EXTENSIONS
+void vkApplication::populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT &createInfo)
+{
+    createInfo = {};
+    createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+    createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+    createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+    createInfo.pfnUserCallback = debugCallback;
+}
+
 std::vector<const char *> vkApplication::getRequiredExtensions()
 {
-    uint32_t glfwExtensionCount = 0;
+    uint32_t glfwExtensionCount{};
     const char **glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
     std::vector<const char *> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
 
@@ -170,9 +153,6 @@ std::vector<const char *> vkApplication::getRequiredExtensions()
     return extensions;
 }
 
-/* Validation Layers */
-// Returns true if element from available layers matched GLFW-required layers.
-
 bool vkApplication::checkValidationLayerSupport()
 {
     uint32_t layerCount;
@@ -180,7 +160,6 @@ bool vkApplication::checkValidationLayerSupport()
     std::vector<VkLayerProperties> availableLayers(layerCount);
     vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
 
-    // compares required extensions to available extensions.
     for (const char *layerName : validationLayers)
     {
         bool layerFound = false;
@@ -189,29 +168,85 @@ bool vkApplication::checkValidationLayerSupport()
             if (strcmp(layerName, layerProperties.layerName) == 0)
             {
                 layerFound = true;
-                break; // is this break/return method shite
+                break; // is this break/return method shite?
             }
         }
         if (!layerFound)
         {
-            return false; // ew ?
+            return false; // ?
         }
     }
 
     return true; // ? is it ?
 }
 
-/* DEBUG callback function */
-// VKAPI_ATTR & VKAPI_CALL ensure function has the right signature for Vk to call it.
-VKAPI_ATTR VkBool32 VKAPI_CALL vkApplication::debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType,
-                                                            const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData, void *pUserData)
+void vkApplication::createInstance()
 {
-    // Swap macro for less or more severity filter.
-    if (messageSeverity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
+    if (enableValidationLayers && !checkValidationLayerSupport())
     {
-        std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
+        throw std::runtime_error("Validation layers requested, but not available!");
     }
-    std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
 
-    return VK_FALSE;
+    VkApplicationInfo appInfo{};
+    appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+    appInfo.pApplicationName = "vkApplication";
+    appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
+    appInfo.pEngineName = "No Engine";
+    appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
+    appInfo.apiVersion = VK_API_VERSION_1_0;
+
+    VkInstanceCreateInfo createInfo{};
+    createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+    createInfo.pApplicationInfo = &appInfo;
+    // Enable extensions
+    auto extensions = getRequiredExtensions(); //	Vk is platform agnostic so extensions are needed to interface with the window system
+    createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
+    createInfo.ppEnabledExtensionNames = extensions.data();
+    // Enable validation layers
+    VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
+    if (enableValidationLayers)
+    {
+        // clarify number of layers required and enable them
+        createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
+        createInfo.ppEnabledLayerNames = validationLayers.data();
+
+        populateDebugMessengerCreateInfo(debugCreateInfo);
+        createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT *)&debugCreateInfo; // ?
+    }
+    else
+    {
+        createInfo.enabledLayerCount = 0;
+
+        createInfo.pNext = nullptr;
+    }
+
+    //	instance can be created.
+    if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS)
+    {
+        throw std::runtime_error("Failed to create instance!");
+    }
+}
+
+void vkApplication::initVulkan()
+{
+    createInstance();
+    setupDebugMessenger();
+    pickPhysicalDevice();
+}
+
+void vkApplication::initWindow()
+{
+    glfwInit();
+    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API); // GLFW originally meant for OpenGL
+    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);   // window resizing requires extra care
+
+    window = glfwCreateWindow(WIDTH, HEIGHT, "Vulkan", nullptr, nullptr);
+}
+
+void vkApplication::run()
+{
+    initWindow();
+    initVulkan();
+    mainLoop();
+    cleanup();
 }
