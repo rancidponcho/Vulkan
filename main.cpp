@@ -6,19 +6,15 @@
 
 #include "public/vkApplication.hpp"
 
-int main()
-{
-	vkApplication app;
+int main() {
+    vkApplication app;
 
-	try
-	{
-		app.run(); // constructor/destructor vs run()/cleanup() ?
-	}
-	catch (const std::exception &e)
-	{
-		std::cerr << e.what() << std::endl;
-		return EXIT_FAILURE;
-	}
+    try {
+        app.run();  // constructor/destructor vs run()/cleanup() ?
+    } catch (const std::exception &e) {
+        std::cerr << e.what() << std::endl;
+        return EXIT_FAILURE;
+    }
 
-	return EXIT_SUCCESS;
+    return EXIT_SUCCESS;
 }
