@@ -1,5 +1,5 @@
 # c++ version, optimization, debug
-INPUT = main.cpp private/vkApplication.cpp
+INPUT = main.cpp private/vkApplication.cpp private/swapChain.cpp private/debugMessenger.cpp
 OUTPUT = -o VulkanTest
 CXXFLAGS = -std=c++17 -g # -O2 (optimization)
 # GLFW, VK function loader, low level systems for GLFW 

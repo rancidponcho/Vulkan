@@ -5,7 +5,12 @@
 #include <vector>
 #include <vulkan/vulkan.hpp>
 
-//  Stores GPU's available queue families
+#ifdef NDEBUG
+const bool enableValidationLayers = false;
+#else
+const bool enableValidationLayers = true;
+#endif
+
 struct QueueFamilyIndices {
     std::optional<uint32_t> graphicsFamily;
     std::optional<uint32_t> presentFamily;
