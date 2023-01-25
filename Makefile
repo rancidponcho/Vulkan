@@ -1,8 +1,14 @@
-# c++ version, optimization, debug
-INPUT = main.cpp private/vkApplication.cpp private/swapChain.cpp private/debugMessenger.cpp
-OUTPUT = -o VulkanTest
-CXXFLAGS = -std=c++17 -g # -O2 (optimization)
-# GLFW, VK function loader, low level systems for GLFW 
+TARGET = Vk_Application
+
+SOURCES = 	main.cpp private/vkApplication.cpp private/debugMessenger.cpp private/window.cpp private/swapChain.cpp private/physicalDevice.cpp
+CC = g++
+CFLAGS = -std=c++17 -g # -O2 (optimization)
+LD = g++
 LDFLAGS = -lglfw -lvulkan -ldl -lpthread -lX11 -lXxf86vm -lXrandr -lXi
-VulkanTest: main.cpp
-	g++ $(INPUT) $(OUTPUT) $(CXXFLAGS) $(LDFLAGS)
+all: $(TARGET)
+
+$(TARGET): $(SOURCES)
+	$(CC) $(CFLAGS) -o $(TARGET) $(SOURCES) $(LDFLAGS)
+
+clean:
+	rm -f $(TARGET)
