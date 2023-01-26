@@ -13,6 +13,10 @@ const bool enableValidationLayers = true;
 
 const uint32_t WIDTH{800}, HEIGHT{600};
 
+//  lists of all vulkan validation layers & extensions
+const std::vector<const char *> validationLayers = {"VK_LAYER_KHRONOS_validation"};
+const std::vector<const char *> deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+
 struct QueueFamilyIndices {
     std::optional<uint32_t> graphicsFamily;
     std::optional<uint32_t> presentFamily;

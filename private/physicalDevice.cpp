@@ -48,10 +48,10 @@ bool tk_physicalDevice::checkExtensionSupport(VkPhysicalDevice device) {
 }
 
 QueueFamilyIndices tk_physicalDevice::findQueueFamilies(VkSurfaceKHR surface) {
-    // Setup vector of families available on device
     QueueFamilyIndices indices;
     uint32_t queueFamilyCount{0};
 
+    /* SEGFAULT HERE */
     vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, nullptr);
     std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
     vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, queueFamilies.data());
@@ -59,7 +59,6 @@ QueueFamilyIndices tk_physicalDevice::findQueueFamilies(VkSurfaceKHR surface) {
     // Find graphics & surface families.
     int i{0};
     for (const auto &queueFamily : queueFamilies) {
-        // Could make these switch cases if requires more than one family
         if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
             indices.graphicsFamily = i;
         }

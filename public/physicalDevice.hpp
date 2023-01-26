@@ -9,8 +9,6 @@
 #include "global.hpp"
 #include "swapChain.hpp"
 
-const std::vector<const char *> deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
-
 class tk_physicalDevice {
    public:
     VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;

@@ -19,8 +19,7 @@
 #include "swapChain.hpp"
 #include "window.hpp"
 
-//  lists of all vulkan validation layers & extensions
-const std::vector<const char *> validationLayers = {"VK_LAYER_KHRONOS_validation"};
+
 
 class vkApplication {
    public:
