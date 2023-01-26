@@ -1,6 +1,6 @@
 # Vulkan
 
-You've found my issue branch! I'm getting a segmentation fault on line 55 of private/physicalDevice.cpp.
+You've found my issues branch! I'm getting a segmentation fault on line 55 of private/physicalDevice.cpp.
 
 GDB says:
 Thread 1 "Vk_Application" received signal SIGSEGV, Segmentation fault.
