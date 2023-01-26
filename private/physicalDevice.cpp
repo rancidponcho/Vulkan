@@ -76,7 +76,7 @@ QueueFamilyIndices tk_physicalDevice::findQueueFamilies(VkSurfaceKHR surface) {
         }
         i++;
     }
-    
+
     std::cout << "e" << std::endl;
     return indices;
 }
