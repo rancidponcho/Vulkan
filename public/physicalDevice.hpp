@@ -20,7 +20,8 @@ class tk_physicalDevice {
     bool isSuitable(VkPhysicalDevice device, VkSurfaceKHR surface, tk_swapChain swapChain);
     bool checkExtensionSupport(VkPhysicalDevice device);
 
-    QueueFamilyIndices findQueueFamilies(VkSurfaceKHR surface);
+    // task > overload this to only take a surface
+    QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device, VkSurfaceKHR surface);
 
     VkPhysicalDevice get() { return physicalDevice; }
 };

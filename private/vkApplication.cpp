@@ -18,7 +18,7 @@ void vkApplication::initVulkan() {
     physicalDevice.select(instance, surface, swapChain);
 
     createLogicalDevice();
-    swapChain.create(physicalDevice.get(), surface, physicalDevice.findQueueFamilies(surface), window.get(), device);
+    swapChain.create(physicalDevice.get(), surface, physicalDevice.findQueueFamilies(physicalDevice.get(), surface), window.get(), device);
 }
 
 void vkApplication::mainLoop() {
@@ -112,7 +112,7 @@ std::vector<const char *> vkApplication::getRequiredExtensions() {
 // Logical Device
 void vkApplication::createLogicalDevice() {
     // Specify queues to be created
-    QueueFamilyIndices indices = physicalDevice.findQueueFamilies(surface);
+    QueueFamilyIndices indices = physicalDevice.findQueueFamilies(physicalDevice.get(), surface);
     std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
     std::set<uint32_t> uniqueQueueFamilies = {indices.graphicsFamily.value(), indices.presentFamily.value()};
 

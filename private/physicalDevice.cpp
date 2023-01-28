@@ -12,7 +12,6 @@ void tk_physicalDevice::select(VkInstance instance, VkSurfaceKHR surface, tk_swa
 
     for (const auto &device : devices) {
         if (isSuitable(device, surface, swapChain)) {
-            std::cout << "DONE!" << std::endl;
             physicalDevice = device;
             break;
         }
@@ -30,7 +29,7 @@ bool tk_physicalDevice::isSuitable(VkPhysicalDevice device, VkSurfaceKHR surface
         swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
     }
 
-    return findQueueFamilies(surface).isComplete() && extensionsSupported && swapChainAdequate;
+    return findQueueFamilies(device, surface).isComplete() && extensionsSupported && swapChainAdequate;
 }
 
 bool tk_physicalDevice::checkExtensionSupport(VkPhysicalDevice device) {
@@ -47,14 +46,14 @@ bool tk_physicalDevice::checkExtensionSupport(VkPhysicalDevice device) {
     return requiredExtensions.empty();
 }
 
-QueueFamilyIndices tk_physicalDevice::findQueueFamilies(VkSurfaceKHR surface) {
+QueueFamilyIndices tk_physicalDevice::findQueueFamilies(VkPhysicalDevice device, VkSurfaceKHR surface) {
     QueueFamilyIndices indices;
     uint32_t queueFamilyCount{0};
 
     /* SEGFAULT HERE */
-    vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, nullptr);
+    vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
     std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
-    vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, queueFamilies.data());
+    vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
 
     // Find graphics & surface families.
     int i{0};
@@ -64,7 +63,7 @@ QueueFamilyIndices tk_physicalDevice::findQueueFamilies(VkSurfaceKHR surface) {
         }
 
         VkBool32 presentSupport = false;
-        vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, i, surface, &presentSupport);
+        vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &presentSupport);
         if (presentSupport) {
             indices.presentFamily = i;
         }
@@ -76,6 +75,5 @@ QueueFamilyIndices tk_physicalDevice::findQueueFamilies(VkSurfaceKHR surface) {
         i++;
     }
 
-    std::cout << "e" << std::endl;
     return indices;
 }
