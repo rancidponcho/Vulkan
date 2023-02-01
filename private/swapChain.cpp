@@ -1,5 +1,8 @@
 #include "../public/swapChain.hpp"
 
+#include <algorithm>
+#include <limits>
+
 void tk_swapChain::create(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, QueueFamilyIndices indices, GLFWwindow *window, VkDevice device) {
     SwapChainSupportDetails swapChainSupport = querySupport(physicalDevice, surface);
 
@@ -55,9 +58,16 @@ void tk_swapChain::create(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface,
 
     swapChainImageFormat = surfaceFormat.format;
     swapChainExtent = extent;
+
+    // ============================
+    createImageViews(device);
 }
 
 void tk_swapChain::destroy(VkDevice device) {
+    for (auto imageView : swapChainImageViews) {
+        vkDestroyImageView(device, imageView, nullptr);
+    }
+
     vkDestroySwapchainKHR(device, swapChain, nullptr);
 }
 
@@ -118,4 +128,32 @@ VkExtent2D tk_swapChain::selectExtent(const VkSurfaceCapabilitiesKHR capabilitie
     actualExtent.height = std::clamp(actualExtent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
 
     return actualExtent;
+}
+
+void tk_swapChain::createImageViews(VkDevice device) {
+    swapChainImageViews.resize(swapChainImages.size());
+
+    for (size_t i = 0; i < swapChainImages.size(); i++) {
+        VkImageViewCreateInfo createInfo{};
+        createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+        createInfo.image = swapChainImages[i];
+        createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+        createInfo.format = swapChainImageFormat;
+        // components allows swizzling of color channels. Can map all channels to red, for example.
+        createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+        createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+        createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+        createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+        // subresourceRange describes image purpose and what parts should be accessed.
+        // In this case, images will be used as color targets w/o mipmapping levels oor multiple layers
+        createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        createInfo.subresourceRange.baseMipLevel = 0;
+        createInfo.subresourceRange.levelCount = 1;
+        createInfo.subresourceRange.baseArrayLayer = 0;
+        createInfo.subresourceRange.layerCount = 1;  // stereographic 3D would use one layer for each eye
+        // creation
+        if (vkCreateImageView(device, &createInfo, nullptr, &swapChainImageViews[i]) != VK_SUCCESS) {
+            throw std::runtime_error("failed to create image views!");
+        }
+    }
 }

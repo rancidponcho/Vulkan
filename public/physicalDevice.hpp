@@ -1,9 +1,5 @@
 #pragma once
 
-#include <iostream>
-#include <set>
-#include <stdexcept>
-#include <vector>
 #include <vulkan/vulkan.hpp>
 
 #include "global.hpp"
@@ -11,17 +7,20 @@
 
 class tk_physicalDevice {
    public:
-    VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
-
     void select(VkInstance instance, VkSurfaceKHR surface, tk_swapChain swapChain);
 
-    //  Only returns true for now (on integrated GPU). Some handy ideas at
-    //  https://vulkan-tutorial.com/Drawing_a_triangle/Setup/Physical_devices_queue_families
+    QueueFamilyIndices findQueueFamilies(VkSurfaceKHR surface);
+
+   private:
+    //  Only returns true for now (on integrated GPU)
     bool isSuitable(VkPhysicalDevice device, VkSurfaceKHR surface, tk_swapChain swapChain);
+
     bool checkExtensionSupport(VkPhysicalDevice device);
 
-    // task > overload this to only take a surface
     QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device, VkSurfaceKHR surface);
 
+    VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
+
+   public:
     VkPhysicalDevice get() { return physicalDevice; }
 };

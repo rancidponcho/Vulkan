@@ -15,17 +15,18 @@
 
 #include "debugMessenger.hpp"
 #include "global.hpp"
+#include "logicalDevice.hpp"
 #include "physicalDevice.hpp"
 #include "swapChain.hpp"
 #include "window.hpp"
-
-
 
 class vkApplication {
    public:
     void run();
 
    private:
+    const uint32_t WIDTH{800}, HEIGHT{600};
+
     VkInstance instance;
     tk_window window;
     VkSurfaceKHR surface;
@@ -35,16 +36,9 @@ class vkApplication {
     /*  Distinction between physical and logical device allows physical device extensions,
         queue counts, etc... whereas logical devices work as an interface  */
     tk_physicalDevice physicalDevice;
-    VkDevice device;
-
-    VkQueue graphicsQueue;
-    VkQueue presentQueue;
+    tk_logicalDevice device;
 
     tk_swapChain swapChain;
-
-    // ===========================================================
-
-    // ===========================================================
 
     void initVulkan();
     void mainLoop();
@@ -55,9 +49,5 @@ class vkApplication {
 
     std::vector<const char *> getRequiredExtensions();
 
-    void createLogicalDevice();
-
     void createSurface();
-
-    // ================================================================================================== //
 };

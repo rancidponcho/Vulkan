@@ -1,6 +1,5 @@
 #pragma once
 
-#include <iostream>
 #include <vector>
 #include <vulkan/vulkan.hpp>
 
@@ -22,4 +21,6 @@ class tk_debugMessenger {
 
     //  Proxy functions for vkCreateDebugUtilsMessengerEXT & eqiuvalent destroy method
     VkResult create(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT *pCreateInfo, const VkAllocationCallbacks *pAllocator, VkDebugUtilsMessengerEXT *pDebugMessenger);
+
+   private:
 };

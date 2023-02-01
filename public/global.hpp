@@ -1,6 +1,5 @@
 #pragma once
 
-#include <iostream>
 #include <optional>
 #include <vector>
 #include <vulkan/vulkan.hpp>
@@ -10,8 +9,6 @@ const bool enableValidationLayers = false;
 #else
 const bool enableValidationLayers = true;
 #endif
-
-const uint32_t WIDTH{800}, HEIGHT{600};
 
 //  lists of all vulkan validation layers & extensions
 const std::vector<const char *> validationLayers = {"VK_LAYER_KHRONOS_validation"};

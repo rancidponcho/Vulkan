@@ -1,16 +1,12 @@
 #pragma once
 
-#define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
-#include <iostream>
-
-#include "global.hpp"
+#include <cstdint>
 
 class tk_window {
    public:
-    void init();
-    void createSurface(VkInstance instance, VkSurfaceKHR surface);
+    void init(const uint32_t width, const uint32_t height);
     void destroy();
     void loop();
 

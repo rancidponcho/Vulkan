@@ -1,5 +1,7 @@
 #include "../public/debugMessenger.hpp"
 
+#include <iostream>
+
 void tk_debugMessenger::setup(VkInstance instance) {
     if (!enableValidationLayers) {
         return;
@@ -44,6 +46,5 @@ VkResult tk_debugMessenger::create(VkInstance instance, const VkDebugUtilsMessen
         return func(instance, pCreateInfo, pAllocator, pDebugMessenger);
     }
     return VK_ERROR_EXTENSION_NOT_PRESENT;
-    std::cout << '\n'
-              << "FAGGOT ass BITCH ;)" << '\n';
+    std::cout << "OOF" << std::endl;
 }
