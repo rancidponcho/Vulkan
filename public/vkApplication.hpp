@@ -15,6 +15,7 @@
 
 #include "debugMessenger.hpp"
 #include "global.hpp"
+#include "graphicsPipeline.hpp"
 #include "logicalDevice.hpp"
 #include "physicalDevice.hpp"
 #include "swapChain.hpp"
@@ -40,14 +41,18 @@ class vkApplication {
 
     tk_swapChain swapChain;
 
+    tk_graphicsPipeline graphicsPipeline;
+
     void initVulkan();
     void mainLoop();
     void cleanup();
+    // Instance should go in it's own class with extensions and validation layers
     void createInstance();
 
     bool checkValidationLayerSupport();
 
     std::vector<const char *> getRequiredExtensions();
 
+    // own class, or window class?
     void createSurface();
 };

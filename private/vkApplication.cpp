@@ -17,8 +17,10 @@ void vkApplication::initVulkan() {
     // combine
     physicalDevice.select(instance, surface, swapChain);
     device.create(physicalDevice, surface);
-    //
+    // Includes viewImages creation
     swapChain.create(physicalDevice.get(), surface, physicalDevice.findQueueFamilies(surface), window.get(), device.get());
+
+    graphicsPipeline.create(device.get());
 }
 
 void vkApplication::mainLoop() {
@@ -26,17 +28,14 @@ void vkApplication::mainLoop() {
 }
 
 void vkApplication::cleanup() {
+    graphicsPipeline.destroy(device.get());
     swapChain.destroy(device.get());
-
     device.destroy();
-
     if (enableValidationLayers) {
         debugMessenger.destroy(instance, nullptr);
     }
-
     vkDestroySurfaceKHR(instance, surface, nullptr);
     vkDestroyInstance(instance, nullptr);
-
     window.destroy();
 }
 
