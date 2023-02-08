@@ -4,8 +4,10 @@
 #include <stdexcept>
 #include <vector>
 
+#include "../public/swapChain.hpp"
+
 // Physical Device // Considering ranking system for other devices
-void tk_physicalDevice::select(VkInstance instance, VkSurfaceKHR surface, tk_swapChain swapChain) {
+void tk_physicalDevice::select(VkInstance instance, VkSurfaceKHR surface, tk_swapChain &swapChain) {
     uint32_t deviceCount{0};
     vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
     if (deviceCount == 0) {
@@ -25,7 +27,7 @@ void tk_physicalDevice::select(VkInstance instance, VkSurfaceKHR surface, tk_swa
     }
 }
 
-bool tk_physicalDevice::isSuitable(VkPhysicalDevice device, VkSurfaceKHR surface, tk_swapChain swapChain) {
+bool tk_physicalDevice::isSuitable(VkPhysicalDevice device, VkSurfaceKHR surface, tk_swapChain &swapChain) {
     bool extensionsSupported = checkExtensionSupport(device);
     bool swapChainAdequate = false;
     if (extensionsSupported) {

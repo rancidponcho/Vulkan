@@ -33,7 +33,7 @@ void tk_debugMessenger::populateCreateInfo(VkDebugUtilsMessengerCreateInfoEXT &c
 VKAPI_ATTR VkBool32 VKAPI_CALL tk_debugMessenger::debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData, void *pUserData) {
     // debug message filter
     if (messageSeverity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) {
-        std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
+        std::cerr << pCallbackData->pMessage << std::endl;
     }
     return VK_FALSE;
 }

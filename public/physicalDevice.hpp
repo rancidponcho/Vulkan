@@ -3,17 +3,17 @@
 #include <vulkan/vulkan.hpp>
 
 #include "global.hpp"
-#include "swapChain.hpp"
+
+class tk_swapChain;
 
 class tk_physicalDevice {
    public:
-    void select(VkInstance instance, VkSurfaceKHR surface, tk_swapChain swapChain);
+    void select(VkInstance instance, VkSurfaceKHR surface, tk_swapChain &swapChain);
 
     QueueFamilyIndices findQueueFamilies(VkSurfaceKHR surface);
 
    private:
-    //  Only returns true for now (on integrated GPU)
-    bool isSuitable(VkPhysicalDevice device, VkSurfaceKHR surface, tk_swapChain swapChain);
+    bool isSuitable(VkPhysicalDevice device, VkSurfaceKHR surface, tk_swapChain &swapChain);
 
     bool checkExtensionSupport(VkPhysicalDevice device);
 

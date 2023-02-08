@@ -2,11 +2,11 @@
 
 #include <vulkan/vulkan.hpp>
 
-#include "physicalDevice.hpp"
+class tk_physicalDevice;
 
 class tk_logicalDevice {
    public:
-    void create(tk_physicalDevice physicalDevice, VkSurfaceKHR surface);
+    void create(tk_physicalDevice &physicalDevice, VkSurfaceKHR surface);
     void destroy();
 
    private:

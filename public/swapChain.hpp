@@ -7,18 +7,21 @@
 
 #include "global.hpp"
 
+class tk_physicalDevice;
+class tk_logicalDevice;
+class tk_window;
+
 class tk_swapChain {
    public:
-    void create(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, QueueFamilyIndices indices, GLFWwindow *window, VkDevice device);
-
-    void destroy(VkDevice device);
+    void create(VkSurfaceKHR surface, tk_physicalDevice &physicalDevice, tk_logicalDevice &device, tk_window &window);
+    void destroy(tk_logicalDevice &device);
 
     SwapChainSupportDetails querySupport(VkPhysicalDevice device, VkSurfaceKHR surface);
 
    private:
     VkSwapchainKHR swapChain;
     std::vector<VkImage> swapChainImages;
-    VkFormat swapChainImageFormat;
+    VkFormat swapChainImageFormat;  // this should be moved to image views class
     VkExtent2D swapChainExtent;
 
     std::vector<VkImageView> swapChainImageViews;
@@ -33,4 +36,7 @@ class tk_swapChain {
 
    public:
     VkSwapchainKHR get() { return swapChain; }
+    VkExtent2D getExtent() { return swapChainExtent; }
+    VkFormat getImageFormat() { return swapChainImageFormat; }
+    std::vector<VkImageView> getImageViews() { return swapChainImageViews; }
 };

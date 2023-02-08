@@ -4,8 +4,9 @@
 #include <set>
 
 #include "../public/global.hpp"
+#include "../public/physicalDevice.hpp"
 
-void tk_logicalDevice::create(tk_physicalDevice physicalDevice, VkSurfaceKHR surface) {
+void tk_logicalDevice::create(tk_physicalDevice &physicalDevice, VkSurfaceKHR surface) {
     // Specify queues to be created
     QueueFamilyIndices indices = physicalDevice.findQueueFamilies(surface);
     std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;

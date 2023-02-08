@@ -18,7 +18,9 @@
 #include "graphicsPipeline.hpp"
 #include "logicalDevice.hpp"
 #include "physicalDevice.hpp"
+#include "renderPass.hpp"
 #include "swapChain.hpp"
+#include "frameBuffer.hpp"
 #include "window.hpp"
 
 class vkApplication {
@@ -41,7 +43,10 @@ class vkApplication {
 
     tk_swapChain swapChain;
 
+    tk_renderPass renderPass;
     tk_graphicsPipeline graphicsPipeline;
+
+    tk_frameBuffer frameBuffer;
 
     void initVulkan();
     void mainLoop();

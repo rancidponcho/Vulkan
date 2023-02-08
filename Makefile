@@ -1,8 +1,8 @@
 TARGET = Vk_Application
 
-SOURCES = main.cpp private/vkApplication.cpp private/debugMessenger.cpp private/window.cpp private/swapChain.cpp private/physicalDevice.cpp private/logicalDevice.cpp private/graphicsPipeline.cpp
+SOURCES = main.cpp private/vkApplication.cpp private/debugMessenger.cpp private/window.cpp private/swapChain.cpp private/physicalDevice.cpp private/logicalDevice.cpp private/graphicsPipeline.cpp private/renderPass.cpp private/frameBuffer.cpp
 CC = g++
-CPPFLAGS = -std=c++17 -g -O3
+CPPFLAGS = -std=c++17 -g -O2
 LD = g++
 LDFLAGS = -lglfw -lvulkan -ldl -lpthread -lX11 -lXxf86vm -lXrandr -lXi
 all: $(TARGET)

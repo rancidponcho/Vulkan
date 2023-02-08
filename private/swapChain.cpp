@@ -3,12 +3,16 @@
 #include <algorithm>
 #include <limits>
 
-void tk_swapChain::create(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, QueueFamilyIndices indices, GLFWwindow *window, VkDevice device) {
-    SwapChainSupportDetails swapChainSupport = querySupport(physicalDevice, surface);
+#include "../public/logicalDevice.hpp"
+#include "../public/physicalDevice.hpp"
+#include "../public/window.hpp"
+
+void tk_swapChain::create(VkSurfaceKHR surface, tk_physicalDevice &physicalDevice, tk_logicalDevice &device, tk_window &window) {
+    SwapChainSupportDetails swapChainSupport = querySupport(physicalDevice.get(), surface);
 
     VkSurfaceFormatKHR surfaceFormat = selectSurfaceFormat(swapChainSupport.formats);
     VkPresentModeKHR presentMode = selectPresentMode(swapChainSupport.presentModes);
-    VkExtent2D extent = selectExtent(swapChainSupport.capabilities, window);
+    VkExtent2D extent = selectExtent(swapChainSupport.capabilities, window.get());
     // Sticking to min means we may have to wait on driver operations before another image can be rendered to, hence +1
     uint32_t imageCount = swapChainSupport.capabilities.minImageCount + 1;
     // Make sure not to exceed max # of imgs. 0 is a special value that means there is no maximum.
@@ -27,6 +31,7 @@ void tk_swapChain::create(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface,
     createInfo.imageArrayLayers = 1;                              // # of layers each img consists of. This is always 1 unless developing stereoscopic 3D application (VR).
     createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;  // Specifies swap operation. In this case, rendering directly to image (color attachment).
 
+    QueueFamilyIndices indices = physicalDevice.findQueueFamilies(surface);
     uint32_t queueFamilyIndices[] = {
         indices.graphicsFamily.value(),
         indices.presentFamily.value()};
@@ -48,27 +53,27 @@ void tk_swapChain::create(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface,
 
     createInfo.oldSwapchain = VK_NULL_HANDLE;  // Check Vk-tut in case of invalid or unoptimized swap chain.
 
-    if (vkCreateSwapchainKHR(device, &createInfo, nullptr, &swapChain) != VK_SUCCESS) {
+    if (vkCreateSwapchainKHR(device.get(), &createInfo, nullptr, &swapChain) != VK_SUCCESS) {
         throw std::runtime_error("failed to freate swap chain!");
     }
     // Retrieve handles
-    vkGetSwapchainImagesKHR(device, swapChain, &imageCount, nullptr);
+    vkGetSwapchainImagesKHR(device.get(), swapChain, &imageCount, nullptr);
     swapChainImages.resize(imageCount);
-    vkGetSwapchainImagesKHR(device, swapChain, &imageCount, swapChainImages.data());
+    vkGetSwapchainImagesKHR(device.get(), swapChain, &imageCount, swapChainImages.data());
 
     swapChainImageFormat = surfaceFormat.format;
     swapChainExtent = extent;
 
     // ============================
-    createImageViews(device);
+    createImageViews(device.get());
 }
 
-void tk_swapChain::destroy(VkDevice device) {
+void tk_swapChain::destroy(tk_logicalDevice &device) {
     for (auto imageView : swapChainImageViews) {
-        vkDestroyImageView(device, imageView, nullptr);
+        vkDestroyImageView(device.get(), imageView, nullptr);
     }
 
-    vkDestroySwapchainKHR(device, swapChain, nullptr);
+    vkDestroySwapchainKHR(device.get(), swapChain, nullptr);
 }
 
 SwapChainSupportDetails tk_swapChain::querySupport(VkPhysicalDevice device, VkSurfaceKHR surface) {

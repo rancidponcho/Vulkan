@@ -2,7 +2,10 @@
 
 #include <fstream>
 
-void tk_graphicsPipeline::create(VkDevice device) {
+#include "../public/logicalDevice.hpp"
+#include "../public/renderPass.hpp"
+
+void tk_graphicsPipeline::create(tk_logicalDevice &device, tk_renderPass &renderPass) {
     auto vertShaderCode = readFile("shaders/spirv/vert.spv");
     auto fragShaderCode = readFile("shaders/spirv/frag.spv");
 
@@ -27,7 +30,7 @@ void tk_graphicsPipeline::create(VkDevice device) {
     fragShaderStageInfo.pName = "main";
     fragShaderStageInfo.pSpecializationInfo = nullptr;
 
-    VkPipelineShaderStageCreateInfo shaderStage[] = {vertShaderStageInfo, fragShaderStageInfo};
+    VkPipelineShaderStageCreateInfo shaderStages[] = {vertShaderStageInfo, fragShaderStageInfo};
 
     // VERTEX INPUT
     // Bindings: spacing between data and whether the data is per-vertex or per-instance
@@ -134,19 +137,42 @@ void tk_graphicsPipeline::create(VkDevice device) {
     pipelineLayoutInfo.pushConstantRangeCount = 0;  // 'push constants' are another way of passing dynamic values to shaders
     pipelineLayoutInfo.pPushConstantRanges = nullptr;
 
-    // CREATION
-    if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
+    if (vkCreatePipelineLayout(device.get(), &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
         throw std::runtime_error("failed to create pipeline layout!");
+    }
+
+    // CREATION
+    VkGraphicsPipelineCreateInfo pipelineInfo{};
+    pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+    pipelineInfo.stageCount = 2;
+    pipelineInfo.pStages = shaderStages;
+    pipelineInfo.pVertexInputState = &vertexInputInfo;
+    pipelineInfo.pInputAssemblyState = &inputAssembly;
+    pipelineInfo.pViewportState = &viewportState;
+    pipelineInfo.pRasterizationState = &rasterizer;
+    pipelineInfo.pMultisampleState = &multisampling;
+    pipelineInfo.pDepthStencilState = nullptr;
+    pipelineInfo.pColorBlendState = &colorBlending;
+    pipelineInfo.pDynamicState = &dynamicState;
+    pipelineInfo.layout = pipelineLayout;
+    pipelineInfo.renderPass = renderPass.get();
+    pipelineInfo.subpass = 0;
+    pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
+    pipelineInfo.basePipelineIndex = -1;
+
+    if (vkCreateGraphicsPipelines(device.get(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS) {
+        throw std::runtime_error("failed to create graphics pipeline!");
     }
 
     // MODULE DESTRUCTION
     // Resources only required for creation
-    vkDestroyShaderModule(device, fragShaderModule, nullptr);
-    vkDestroyShaderModule(device, vertShaderModule, nullptr);
+    vkDestroyShaderModule(device.get(), fragShaderModule, nullptr);
+    vkDestroyShaderModule(device.get(), vertShaderModule, nullptr);
 }
 
-void tk_graphicsPipeline::destroy(VkDevice device) {
-    vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
+void tk_graphicsPipeline::destroy(tk_logicalDevice &device) {
+    vkDestroyPipeline(device.get(), graphicsPipeline, nullptr);
+    vkDestroyPipelineLayout(device.get(), pipelineLayout, nullptr);
 }
 
 std::vector<char> tk_graphicsPipeline::readFile(const std::string &filename) {
@@ -171,14 +197,14 @@ std::vector<char> tk_graphicsPipeline::readFile(const std::string &filename) {
     return buffer;
 }
 
-VkShaderModule tk_graphicsPipeline::createShaderModule(const std::vector<char> &code, VkDevice device) {
+VkShaderModule tk_graphicsPipeline::createShaderModule(const std::vector<char> &code, tk_logicalDevice &device) {
     VkShaderModuleCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
     createInfo.codeSize = code.size();
     createInfo.pCode = reinterpret_cast<const uint32_t *>(code.data());
 
     VkShaderModule shaderModule;
-    if (vkCreateShaderModule(device, &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
+    if (vkCreateShaderModule(device.get(), &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
         throw std::runtime_error("failed to create shader module!");
     }
 
