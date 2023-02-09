@@ -1,15 +1,23 @@
-TARGET = Vk_Application
+TARGET = Application
+OBJDIR = obj
 
-SOURCES = main.cpp private/vkApplication.cpp private/debugMessenger.cpp private/window.cpp private/swapChain.cpp private/physicalDevice.cpp private/logicalDevice.cpp private/graphicsPipeline.cpp private/renderPass.cpp private/frameBuffer.cpp
+SOURCES = $(wildcard private/*.cpp)
+OBJECTS = $(patsubst private/%.cpp, $(OBJDIR)/%.o, $(SOURCES))
+
 CC = g++
 CPPFLAGS = -std=c++17 -g -O2
 LD = g++
 LDFLAGS = -lglfw -lvulkan -ldl -lpthread -lX11 -lXxf86vm -lXrandr -lXi
+
 all: $(TARGET)
 
-$(TARGET): $(SOURCES)
-	$(CC) $(CPPFLAGS) -o $(TARGET) $(SOURCES) $(LDFLAGS)
+$(TARGET): main.cpp $(OBJECTS)
+	$(CC) $(CPPFLAGS) -o $(TARGET) main.cpp $(OBJECTS) $(LDFLAGS)
+
+$(OBJDIR)/%.o: private/%.cpp
+	$(CC) $(CPPFLAGS) -c $< -o $@
 
 clean:
 	rm -f $(TARGET)
+	rm -f $(OBJECTS)
 	rm -f shaders/spirv/*

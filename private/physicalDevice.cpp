@@ -5,19 +5,21 @@
 #include <vector>
 
 #include "../public/swapChain.hpp"
+#include "../public/instance.hpp"
+#include "../public/surface.hpp"
 
 // Physical Device // Considering ranking system for other devices
-void tk_physicalDevice::select(VkInstance instance, VkSurfaceKHR surface, tk_swapChain &swapChain) {
+void tk_physicalDevice::select(tk_instance &instance, tk_surface &surface, tk_swapChain &swapChain) {
     uint32_t deviceCount{0};
-    vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
+    vkEnumeratePhysicalDevices(instance.get(), &deviceCount, nullptr);
     if (deviceCount == 0) {
         throw std::runtime_error("failed to find GPUs with Vulkan support!");
     }
     std::vector<VkPhysicalDevice> devices(deviceCount);
-    vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
+    vkEnumeratePhysicalDevices(instance.get(), &deviceCount, devices.data());
 
     for (const auto &device : devices) {
-        if (isSuitable(device, surface, swapChain)) {
+        if (isSuitable(device, surface.get(), swapChain)) {
             physicalDevice = device;
             break;
         }
@@ -84,7 +86,7 @@ QueueFamilyIndices tk_physicalDevice::findQueueFamilies(VkPhysicalDevice device,
     return indices;
 }
 
-QueueFamilyIndices tk_physicalDevice::findQueueFamilies(VkSurfaceKHR surface) {
+QueueFamilyIndices tk_physicalDevice::findQueueFamilies(tk_surface &surface) {
     QueueFamilyIndices indices;
     uint32_t queueFamilyCount{0};
 
@@ -101,7 +103,7 @@ QueueFamilyIndices tk_physicalDevice::findQueueFamilies(VkSurfaceKHR surface) {
         }
 
         VkBool32 presentSupport = false;
-        vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, i, surface, &presentSupport);
+        vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, i, surface.get(), &presentSupport);
         if (presentSupport) {
             indices.presentFamily = i;
         }

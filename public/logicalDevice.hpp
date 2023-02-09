@@ -3,10 +3,11 @@
 #include <vulkan/vulkan.hpp>
 
 class tk_physicalDevice;
+class tk_surface;
 
 class tk_logicalDevice {
    public:
-    void create(tk_physicalDevice &physicalDevice, VkSurfaceKHR surface);
+    void create(tk_physicalDevice &physicalDevice, tk_surface &surface);
     void destroy();
 
    private:

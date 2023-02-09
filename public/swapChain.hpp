@@ -10,12 +10,14 @@
 class tk_physicalDevice;
 class tk_logicalDevice;
 class tk_window;
+class tk_surface;
 
 class tk_swapChain {
    public:
-    void create(VkSurfaceKHR surface, tk_physicalDevice &physicalDevice, tk_logicalDevice &device, tk_window &window);
+    void create(tk_surface &surface, tk_physicalDevice &physicalDevice, tk_logicalDevice &device, tk_window &window);
     void destroy(tk_logicalDevice &device);
 
+    // TAKES VK TYPES
     SwapChainSupportDetails querySupport(VkPhysicalDevice device, VkSurfaceKHR surface);
 
    private:
