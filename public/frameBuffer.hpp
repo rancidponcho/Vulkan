@@ -14,4 +14,7 @@ class tk_frameBuffer {
 
    private:
     std::vector<VkFramebuffer> swapChainFramebuffers;
+
+   public:
+    std::vector<VkFramebuffer> get() { return swapChainFramebuffers; }
 };

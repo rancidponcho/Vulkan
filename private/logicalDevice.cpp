@@ -5,8 +5,15 @@
 
 #include "../public/global.hpp"
 #include "../public/physicalDevice.hpp"
+#include "../public/surface.hpp"
 
-void tk_logicalDevice::create(tk_physicalDevice &physicalDevice, VkSurfaceKHR surface) {
+#ifdef NDEBUG
+const bool enableValidationLayers = false;
+#else
+const bool enableValidationLayers = true;
+#endif
+
+void tk_logicalDevice::create(tk_physicalDevice &physicalDevice, tk_surface &surface) {
     // Specify queues to be created
     QueueFamilyIndices indices = physicalDevice.findQueueFamilies(surface);
     std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;

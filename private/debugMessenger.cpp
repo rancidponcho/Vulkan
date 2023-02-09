@@ -2,7 +2,9 @@
 
 #include <iostream>
 
-void tk_debugMessenger::setup(VkInstance instance) {
+#include "../public/instance.hpp"
+
+void tk_debugMessenger::setup(tk_instance &instance) {
     if (!enableValidationLayers) {
         return;
     }
@@ -10,15 +12,17 @@ void tk_debugMessenger::setup(VkInstance instance) {
     VkDebugUtilsMessengerCreateInfoEXT createInfo;
     populateCreateInfo(createInfo);
 
-    if (create(instance, &createInfo, nullptr, &debugMessenger) != VK_SUCCESS) {
+    if (create(instance.get(), &createInfo, nullptr, &debugMessenger) != VK_SUCCESS) {
         throw std::runtime_error("Failed to set up debug messenger!");
     }
 }
 
-void tk_debugMessenger::destroy(VkInstance instance, const VkAllocationCallbacks *pAllocator) {
-    auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
-    if (func != nullptr) {
-        func(instance, debugMessenger, pAllocator);
+void tk_debugMessenger::destroy(tk_instance &instance, const VkAllocationCallbacks *pAllocator) {
+    if (enableValidationLayers) {
+        auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance.get(), "vkDestroyDebugUtilsMessengerEXT");
+        if (func != nullptr) {
+            func(instance.get(), debugMessenger, pAllocator);
+        }
     }
 }
 
@@ -46,5 +50,4 @@ VkResult tk_debugMessenger::create(VkInstance instance, const VkDebugUtilsMessen
         return func(instance, pCreateInfo, pAllocator, pDebugMessenger);
     }
     return VK_ERROR_EXTENSION_NOT_PRESENT;
-    std::cout << "OOF" << std::endl;
 }

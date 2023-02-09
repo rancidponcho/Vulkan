@@ -5,10 +5,11 @@
 
 #include "../public/logicalDevice.hpp"
 #include "../public/physicalDevice.hpp"
+#include "../public/surface.hpp"
 #include "../public/window.hpp"
 
-void tk_swapChain::create(VkSurfaceKHR surface, tk_physicalDevice &physicalDevice, tk_logicalDevice &device, tk_window &window) {
-    SwapChainSupportDetails swapChainSupport = querySupport(physicalDevice.get(), surface);
+void tk_swapChain::create(tk_surface &surface, tk_physicalDevice &physicalDevice, tk_logicalDevice &device, tk_window &window) {
+    SwapChainSupportDetails swapChainSupport = querySupport(physicalDevice.get(), surface.get());
 
     VkSurfaceFormatKHR surfaceFormat = selectSurfaceFormat(swapChainSupport.formats);
     VkPresentModeKHR presentMode = selectPresentMode(swapChainSupport.presentModes);
@@ -22,7 +23,7 @@ void tk_swapChain::create(VkSurfaceKHR surface, tk_physicalDevice &physicalDevic
 
     VkSwapchainCreateInfoKHR createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-    createInfo.surface = surface;  // INPUT
+    createInfo.surface = surface.get();  // INPUT
 
     createInfo.minImageCount = imageCount;
     createInfo.imageFormat = surfaceFormat.format;

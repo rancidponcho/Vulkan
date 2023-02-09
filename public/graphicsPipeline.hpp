@@ -23,4 +23,5 @@ class tk_graphicsPipeline {
     VkShaderModule createShaderModule(const std::vector<char> &code, tk_logicalDevice &device);
 
    public:
+    VkPipeline get() { return graphicsPipeline; }
 };
