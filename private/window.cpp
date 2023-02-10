@@ -12,10 +12,3 @@ void tk_window::destroy() {
     glfwDestroyWindow(window);
     glfwTerminate();
 }
-
-// temporary main loop function
-void tk_window::loop() {
-    while (!glfwWindowShouldClose(window)) {
-        glfwPollEvents();
-    }
-}

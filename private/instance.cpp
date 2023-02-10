@@ -8,12 +8,6 @@
 #include "../public/debugMessenger.hpp"
 #include "../public/global.hpp"
 
-#ifdef NDEBUG
-const bool enableValidationLayers = false;
-#else
-const bool enableValidationLayers = true;
-#endif
-
 void tk_instance::create(tk_debugMessenger &debugMessenger) {
     if (enableValidationLayers && !checkValidationLayerSupport()) {
         throw std::runtime_error("Validation layers requested, but not available!");

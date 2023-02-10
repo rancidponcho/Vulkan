@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vulkan/vulkan.hpp>
+
 #include "commandBuffer.hpp"
 #include "commandPool.hpp"
 #include "debugMessenger.hpp"
@@ -34,7 +36,14 @@ class vkApplication {
     tk_commandPool commandPool;
     tk_commandBuffer commandBuffer;
 
+    VkSemaphore imageAvailableSemaphore;
+    VkSemaphore renderFinishedSemaphore;
+    VkFence inFlightFence;
+
     void initVulkan();
     void mainLoop();
     void cleanup();
+
+    void drawFrame();
+    void createSyncObjects();
 };

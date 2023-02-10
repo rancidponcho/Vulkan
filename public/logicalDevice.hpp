@@ -17,4 +17,6 @@ class tk_logicalDevice {
 
    public:
     VkDevice get() { return device; }
+    VkQueue getGraphicsQueue() { return graphicsQueue; }
+    VkQueue getPresentQueue() { return presentQueue; }
 };

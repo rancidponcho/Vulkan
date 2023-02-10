@@ -17,4 +17,8 @@ class tk_commandBuffer {
 
    private:
     VkCommandBuffer commandBuffer;
+
+   public:
+    VkCommandBuffer get() { return commandBuffer; }
+    VkCommandBuffer *getPtr() { return &commandBuffer; }
 };

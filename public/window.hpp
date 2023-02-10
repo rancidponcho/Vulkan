@@ -8,7 +8,6 @@ class tk_window {
    public:
     void init(const uint32_t width, const uint32_t height);
     void destroy();
-    void loop();
 
    private:
     GLFWwindow* window;

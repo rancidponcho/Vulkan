@@ -7,12 +7,6 @@
 #include "../public/physicalDevice.hpp"
 #include "../public/surface.hpp"
 
-#ifdef NDEBUG
-const bool enableValidationLayers = false;
-#else
-const bool enableValidationLayers = true;
-#endif
-
 void tk_logicalDevice::create(tk_physicalDevice &physicalDevice, tk_surface &surface) {
     // Specify queues to be created
     QueueFamilyIndices indices = physicalDevice.findQueueFamilies(surface);
