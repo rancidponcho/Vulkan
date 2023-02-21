@@ -1,8 +1,9 @@
 #pragma once
 
+#include <vector>
 #include <vulkan/vulkan.hpp>
 
-#include "commandBuffer.hpp"
+#include "commandBuffers.hpp"
 #include "commandPool.hpp"
 #include "debugMessenger.hpp"
 #include "frameBuffer.hpp"
@@ -14,14 +15,19 @@
 #include "renderPass.hpp"
 #include "surface.hpp"
 #include "swapChain.hpp"
+#include "vertexBuffer.hpp"
 #include "window.hpp"
 
 class vkApplication {
    public:
     void run();
 
+    bool framebufferResized = false;
+
    private:
     const uint32_t WIDTH{800}, HEIGHT{600};
+    const int MAX_FRAMES_IN_FLIGHT = 2;
+    uint32_t currentFrame = 0;
 
     tk_instance instance;
     tk_window window;
@@ -34,11 +40,12 @@ class vkApplication {
     tk_graphicsPipeline graphicsPipeline;
     tk_frameBuffer frameBuffer;
     tk_commandPool commandPool;
-    tk_commandBuffer commandBuffer;
+    tk_commandBuffers commandBuffers;
+    tk_vertexBuffer vertexBuffer;
 
-    VkSemaphore imageAvailableSemaphore;
-    VkSemaphore renderFinishedSemaphore;
-    VkFence inFlightFence;
+    std::vector<VkSemaphore> imageAvailableSemaphores;
+    std::vector<VkSemaphore> renderFinishedSemaphores;
+    std::vector<VkFence> inFlightFences;
 
     void initVulkan();
     void mainLoop();
@@ -46,4 +53,6 @@ class vkApplication {
 
     void drawFrame();
     void createSyncObjects();
+
+    void recreateSwapChain();
 };

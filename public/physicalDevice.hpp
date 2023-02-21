@@ -12,6 +12,7 @@ class tk_physicalDevice {
    public:
     void select(tk_instance &instance, tk_surface &surface, tk_swapChain &swapChain);
     QueueFamilyIndices findQueueFamilies(tk_surface &surface);
+    uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
    private:
     bool isSuitable(VkPhysicalDevice device, VkSurfaceKHR surface, tk_swapChain &swapChain);

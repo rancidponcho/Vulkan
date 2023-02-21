@@ -4,6 +4,7 @@
 
 #include "../public/logicalDevice.hpp"
 #include "../public/renderPass.hpp"
+#include "../public/vertexBuffer.hpp"
 
 void tk_graphicsPipeline::create(tk_logicalDevice &device, tk_renderPass &renderPass) {
     auto vertShaderCode = readFile("shaders/spirv/vert.spv");
@@ -37,10 +38,14 @@ void tk_graphicsPipeline::create(tk_logicalDevice &device, tk_renderPass &render
     // Attribute descriptions: type of the attributes passed to ther vertex shader, which binding to load them and which offset
     VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
     vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-    vertexInputInfo.vertexBindingDescriptionCount = 0;
-    vertexInputInfo.pVertexBindingDescriptions = nullptr;  // array of structs
-    vertexInputInfo.vertexAttributeDescriptionCount = 0;
-    vertexInputInfo.pVertexAttributeDescriptions = nullptr;  // array of structs
+
+    auto bindingDescription = Vertex::getBindingDescription();
+    auto attributeDescriptions = Vertex::getAttributeDescriptions();
+
+    vertexInputInfo.vertexBindingDescriptionCount = 1;
+    vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;  // array of structs
+    vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+    vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();  // array of structs
 
     // INPUT ASSEMBLY
     // Topology: what kind of geometry will be drawn from the vertices

@@ -1,4 +1,4 @@
-#include "../public/commandBuffer.hpp"
+#include "../public/commandBuffers.hpp"
 
 #include "../public/commandPool.hpp"
 #include "../public/frameBuffer.hpp"
@@ -6,27 +6,31 @@
 #include "../public/logicalDevice.hpp"
 #include "../public/renderPass.hpp"
 #include "../public/swapChain.hpp"
+#include "../public/vertexBuffer.hpp"
 
-void tk_commandBuffer::create(tk_commandPool &commandPool, tk_logicalDevice &device) {
+void tk_commandBuffers::create(tk_commandPool &commandPool, tk_logicalDevice &device) {
+    commandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
+
     VkCommandBufferAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
     allocInfo.commandPool = commandPool.get();
     allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    allocInfo.commandBufferCount = 1;
+    allocInfo.commandBufferCount = (uint32_t)commandBuffers.size();
 
-    if (vkAllocateCommandBuffers(device.get(), &allocInfo, &commandBuffer) != VK_SUCCESS) {
+    if (vkAllocateCommandBuffers(device.get(), &allocInfo, commandBuffers.data()) != VK_SUCCESS) {
         throw std::runtime_error("failed to allocate command buffers!");
     }
 }
 
-void tk_commandBuffer::record(tk_swapChain &swapChain, tk_renderPass &renderPass, tk_frameBuffer &frameBuffer, tk_graphicsPipeline &graphicsPipeline, uint32_t imageIndex) {
+// desperately needs work
+void tk_commandBuffers::record(uint32_t currentFrame, tk_swapChain &swapChain, tk_renderPass &renderPass, tk_frameBuffer &frameBuffer, tk_graphicsPipeline &graphicsPipeline, uint32_t imageIndex, tk_vertexBuffer &vertexBuffer) {
     VkCommandBufferBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
     beginInfo.flags = 0;
     beginInfo.pInheritanceInfo = nullptr;
 
     // BEGIN CMD BUFFER
-    if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS) {
+    if (vkBeginCommandBuffer(commandBuffers[currentFrame], &beginInfo) != VK_SUCCESS) {
         throw std::runtime_error("failed to begin recording command buffer!");
     }
 
@@ -42,10 +46,10 @@ void tk_commandBuffer::record(tk_swapChain &swapChain, tk_renderPass &renderPass
     renderPassInfo.pClearValues = &clearColor;
 
     // BEGIN RENDER PASS
-    vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+    vkCmdBeginRenderPass(commandBuffers[currentFrame], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
     // BIND GRAPHICS PIPELINE
-    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline.get());
+    vkCmdBindPipeline(commandBuffers[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline.get());
 
     // BASIC DRAWING COMMANDS
     VkViewport viewport{};
@@ -55,21 +59,28 @@ void tk_commandBuffer::record(tk_swapChain &swapChain, tk_renderPass &renderPass
     viewport.height = static_cast<float>(swapChain.getExtent().height);
     viewport.minDepth = 0.0f;
     viewport.maxDepth = 1.0f;
-    vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+    vkCmdSetViewport(commandBuffers[currentFrame], 0, 1, &viewport);
 
     VkRect2D scissor{};
     scissor.offset = {0, 0};
     scissor.extent = swapChain.getExtent();
-    vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+    vkCmdSetScissor(commandBuffers[currentFrame], 0, 1, &scissor);
+
+    // VERTEX BUFFERS
+    VkBuffer vertexBuffers[] = {vertexBuffer.get()};
+    VkDeviceSize offsets[] = {0};
+    vkCmdBindVertexBuffers(commandBuffers[currentFrame], 0, 1, vertexBuffers, offsets);
+
+    vkCmdDraw(commandBuffers[currentFrame], static_cast<uint32_t>(vertices.size()), 1, 0, 0);
 
     // DRAW
-    vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+    vkCmdDraw(commandBuffers[currentFrame], 3, 1, 0, 0);
 
     // END RENDER PASS
-    vkCmdEndRenderPass(commandBuffer);
+    vkCmdEndRenderPass(commandBuffers[currentFrame]);
 
     // END CMD BUFFER
-    if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
+    if (vkEndCommandBuffer(commandBuffers[currentFrame]) != VK_SUCCESS) {
         throw std::runtime_error("failed to record command buffer!");
     }
 }

@@ -4,9 +4,9 @@
 #include <stdexcept>
 #include <vector>
 
-#include "../public/swapChain.hpp"
 #include "../public/instance.hpp"
 #include "../public/surface.hpp"
+#include "../public/swapChain.hpp"
 
 // Physical Device // Considering ranking system for other devices
 void tk_physicalDevice::select(tk_instance &instance, tk_surface &surface, tk_swapChain &swapChain) {
@@ -116,4 +116,17 @@ QueueFamilyIndices tk_physicalDevice::findQueueFamilies(tk_surface &surface) {
     }
 
     return indices;
+}
+
+uint32_t tk_physicalDevice::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
+    VkPhysicalDeviceMemoryProperties memProperties;
+    vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProperties);
+
+    for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
+        if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
+            return i;
+        }
+    }
+
+    throw std::runtime_error("failed to find suitable memory type!");
 }
