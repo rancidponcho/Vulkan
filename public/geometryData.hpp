@@ -36,26 +36,10 @@ struct Vertex {
 };
 
 const std::vector<Vertex> vertices = {
-    {{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-    {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
-    {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}};
+    {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+    {{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
+    {{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
+    {{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}};
 
-class tk_logicalDevice;
-class tk_physicalDevice;
-class tk_commandPool;
-
-class tk_vertexBuffer {
-   public:
-    void create(tk_logicalDevice &device, tk_physicalDevice &physicalDevice, tk_commandPool &commandPool);
-    void destroy(tk_logicalDevice &device);
-
-   private:
-    VkBuffer vertexBuffer;
-    VkDeviceMemory vertexBufferMemory;
-
-    void createBuffer(tk_logicalDevice &device, tk_physicalDevice &physicalDevice, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer &buffer, VkDeviceMemory &bufferMemory);
-    void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size, tk_logicalDevice &device, tk_commandPool &commandPool);
-
-   public:
-    VkBuffer get() { return vertexBuffer; }
-};
+const std::vector<uint16_t> indices = {
+    0, 1, 2, 2, 3, 0};

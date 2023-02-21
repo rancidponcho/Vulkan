@@ -1,11 +1,18 @@
-#include "../public/vertexBuffer.hpp"
+#include "../public/geometryBuffer.hpp"
+
+#include <array>
+#include <glm/glm.hpp>
+#include <vector>
 
 #include "../public/commandPool.hpp"
+#include "../public/geometryData.hpp"
 #include "../public/logicalDevice.hpp"
 #include "../public/physicalDevice.hpp"
 
-void tk_vertexBuffer::create(tk_logicalDevice &device, tk_physicalDevice &physicalDevice, tk_commandPool &commandPool) {
-    VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
+void tk_geometryBuffer::create(tk_logicalDevice &device, tk_physicalDevice &physicalDevice, tk_commandPool &commandPool) {
+    size_t vertexDataSize = sizeof(vertices[0]) * vertices.size();
+    size_t indexDataSize = sizeof(indices[0]) * indices.size();
+    VkDeviceSize bufferSize = vertexDataSize + indexDataSize;
 
     VkBuffer stagingBuffer;
     VkDeviceMemory stagingBufferMemory;
@@ -13,23 +20,24 @@ void tk_vertexBuffer::create(tk_logicalDevice &device, tk_physicalDevice &physic
 
     void *data;
     vkMapMemory(device.get(), stagingBufferMemory, 0, bufferSize, 0, &data);
-    memcpy(data, vertices.data(), (size_t)bufferSize);
+    memcpy(data, vertices.data(), vertexDataSize);
+    memcpy(static_cast<char *>(data) + vertexDataSize, indices.data(), indexDataSize);
     vkUnmapMemory(device.get(), stagingBufferMemory);
 
-    createBuffer(device, physicalDevice, bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer, vertexBufferMemory);
+    createBuffer(device, physicalDevice, bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, geometryBuffer, geometryBufferMemory);
 
-    copyBuffer(stagingBuffer, vertexBuffer, bufferSize, device, commandPool);
+    copyBuffer(stagingBuffer, geometryBuffer, bufferSize, device, commandPool);
 
     vkDestroyBuffer(device.get(), stagingBuffer, nullptr);
     vkFreeMemory(device.get(), stagingBufferMemory, nullptr);
 }
 
-void tk_vertexBuffer::destroy(tk_logicalDevice &device) {
-    vkDestroyBuffer(device.get(), vertexBuffer, nullptr);
-    vkFreeMemory(device.get(), vertexBufferMemory, nullptr);
+void tk_geometryBuffer::destroy(tk_logicalDevice &device) {
+    vkDestroyBuffer(device.get(), geometryBuffer, nullptr);
+    vkFreeMemory(device.get(), geometryBufferMemory, nullptr);
 }
 
-void tk_vertexBuffer::createBuffer(tk_logicalDevice &device, tk_physicalDevice &physicalDevice, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer &buffer, VkDeviceMemory &bufferMemory) {
+void tk_geometryBuffer::createBuffer(tk_logicalDevice &device, tk_physicalDevice &physicalDevice, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer &buffer, VkDeviceMemory &bufferMemory) {
     VkBufferCreateInfo bufferInfo{};
     bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
     bufferInfo.size = size;
@@ -55,7 +63,7 @@ void tk_vertexBuffer::createBuffer(tk_logicalDevice &device, tk_physicalDevice &
     vkBindBufferMemory(device.get(), buffer, bufferMemory, 0);
 }
 
-void tk_vertexBuffer::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size, tk_logicalDevice &device, tk_commandPool &commandPool) {
+void tk_geometryBuffer::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size, tk_logicalDevice &device, tk_commandPool &commandPool) {
     VkCommandBufferAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
     allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;

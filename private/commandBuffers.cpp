@@ -2,11 +2,12 @@
 
 #include "../public/commandPool.hpp"
 #include "../public/frameBuffer.hpp"
+#include "../public/geoBuffer.hpp"
+#include "../public/geoData.hpp"
 #include "../public/graphicsPipeline.hpp"
 #include "../public/logicalDevice.hpp"
 #include "../public/renderPass.hpp"
 #include "../public/swapChain.hpp"
-#include "../public/vertexBuffer.hpp"
 
 void tk_commandBuffers::create(tk_commandPool &commandPool, tk_logicalDevice &device) {
     commandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
@@ -23,7 +24,7 @@ void tk_commandBuffers::create(tk_commandPool &commandPool, tk_logicalDevice &de
 }
 
 // desperately needs work
-void tk_commandBuffers::record(uint32_t currentFrame, tk_swapChain &swapChain, tk_renderPass &renderPass, tk_frameBuffer &frameBuffer, tk_graphicsPipeline &graphicsPipeline, uint32_t imageIndex, tk_vertexBuffer &vertexBuffer) {
+void tk_commandBuffers::record(uint32_t currentFrame, tk_swapChain &swapChain, tk_renderPass &renderPass, tk_frameBuffer &frameBuffer, tk_graphicsPipeline &graphicsPipeline, uint32_t imageIndex, tk_geometryBuffer &geometryBuffer) {
     VkCommandBufferBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
     beginInfo.flags = 0;
@@ -67,14 +68,14 @@ void tk_commandBuffers::record(uint32_t currentFrame, tk_swapChain &swapChain, t
     vkCmdSetScissor(commandBuffers[currentFrame], 0, 1, &scissor);
 
     // VERTEX BUFFERS
-    VkBuffer vertexBuffers[] = {vertexBuffer.get()};
+    VkBuffer vertexBuffers[] = {geometryBuffer.get()};
     VkDeviceSize offsets[] = {0};
     vkCmdBindVertexBuffers(commandBuffers[currentFrame], 0, 1, vertexBuffers, offsets);
-
-    vkCmdDraw(commandBuffers[currentFrame], static_cast<uint32_t>(vertices.size()), 1, 0, 0);
+    size_t vertexDataSize = sizeof(vertices[0]) * vertices.size();
+    vkCmdBindIndexBuffer(commandBuffers[currentFrame], geometryBuffer.get(), vertexDataSize, VK_INDEX_TYPE_UINT16);
 
     // DRAW
-    vkCmdDraw(commandBuffers[currentFrame], 3, 1, 0, 0);
+    vkCmdDrawIndexed(commandBuffers[currentFrame], static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
 
     // END RENDER PASS
     vkCmdEndRenderPass(commandBuffers[currentFrame]);

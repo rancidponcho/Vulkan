@@ -4,7 +4,7 @@
 
 #include "../public/logicalDevice.hpp"
 #include "../public/renderPass.hpp"
-#include "../public/vertexBuffer.hpp"
+#include "../public/vertexData.hpp"
 
 void tk_graphicsPipeline::create(tk_logicalDevice &device, tk_renderPass &renderPass) {
     auto vertShaderCode = readFile("shaders/spirv/vert.spv");

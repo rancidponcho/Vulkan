@@ -20,7 +20,7 @@ void vkApplication::initVulkan() {
 
     commandPool.create(physicalDevice, surface, device);
     commandBuffers.create(commandPool, device);
-    vertexBuffer.create(device, physicalDevice, commandPool);
+    geometryBuffer.create(device, physicalDevice, commandPool);
 
     createSyncObjects();
 }
@@ -42,7 +42,7 @@ void vkApplication::cleanup() {
     }
 
     commandPool.destroy(device);
-    vertexBuffer.destroy(device);
+    geometryBuffer.destroy(device);
     frameBuffer.destroy(device);
     graphicsPipeline.destroy(device);
     renderPass.destroy(device);
@@ -73,7 +73,7 @@ void vkApplication::drawFrame() {
 
     // record a command buffer which draws the scene onto that image
     vkResetCommandBuffer(commandBuffers.get(currentFrame), 0);
-    commandBuffers.record(currentFrame, swapChain, renderPass, frameBuffer, graphicsPipeline, imageIndex, vertexBuffer);
+    commandBuffers.record(currentFrame, swapChain, renderPass, frameBuffer, graphicsPipeline, imageIndex, geometryBuffer);
 
     // Submit the recorded command buffer
     VkSubmitInfo submitInfo{};

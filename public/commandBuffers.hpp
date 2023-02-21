@@ -9,13 +9,13 @@ class tk_renderPass;
 class tk_frameBuffer;
 class tk_swapChain;
 class tk_graphicsPipeline;
-class tk_vertexBuffer;
+class tk_geometryBuffer;
 
 class tk_commandBuffers {
    public:
     void create(tk_commandPool &commandPool, tk_logicalDevice &device);
     // automatically destroyed when command pool is destroyed
-    void record(uint32_t currentFrame, tk_swapChain &swapChain, tk_renderPass &renderPass, tk_frameBuffer &frameBuffer, tk_graphicsPipeline &graphicsPipeline, uint32_t imageIndex, tk_vertexBuffer &vertexBuffer);
+    void record(uint32_t currentFrame, tk_swapChain &swapChain, tk_renderPass &renderPass, tk_frameBuffer &frameBuffer, tk_graphicsPipeline &graphicsPipeline, uint32_t imageIndex, tk_geometryBuffer &geometryBuffer);
 
    private:
     std::vector<VkCommandBuffer> commandBuffers;

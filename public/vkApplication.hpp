@@ -7,6 +7,7 @@
 #include "commandPool.hpp"
 #include "debugMessenger.hpp"
 #include "frameBuffer.hpp"
+#include "geometryBuffer.hpp"
 #include "global.hpp"
 #include "graphicsPipeline.hpp"
 #include "instance.hpp"
@@ -15,7 +16,6 @@
 #include "renderPass.hpp"
 #include "surface.hpp"
 #include "swapChain.hpp"
-#include "vertexBuffer.hpp"
 #include "window.hpp"
 
 class vkApplication {
@@ -41,7 +41,7 @@ class vkApplication {
     tk_frameBuffer frameBuffer;
     tk_commandPool commandPool;
     tk_commandBuffers commandBuffers;
-    tk_vertexBuffer vertexBuffer;
+    tk_geometryBuffer geometryBuffer;
 
     std::vector<VkSemaphore> imageAvailableSemaphores;
     std::vector<VkSemaphore> renderFinishedSemaphores;
